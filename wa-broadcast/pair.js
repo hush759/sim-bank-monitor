@@ -1,5 +1,9 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
+const readline = require('readline');
+
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+const question = (text) => new Promise((resolve) => rl.question(text, resolve));
 
 async function startPairing() {
   const { state, saveCreds } = await useMultiFileAuthState('auth_info');
@@ -11,18 +15,20 @@ async function startPairing() {
   sock.ev.on('creds.update', saveCreds);
 
   if (!sock.authState.creds.registered) {
-    const number = '2349131382030';
-    setTimeout(async () => {
-      try {
-        const code = await sock.requestPairingCode(number);
-        console.log('\n==================================================');
-        console.log(`  YOUR PAIRING CODE: ${code}`);
-        console.log('==================================================\n');
-        console.log('On phone (09131382030): WhatsApp > Settings > Linked Devices > Link with phone number');
-      } catch (err) {
-        console.error('Error requesting code:', err.message);
-      }
-    }, 2000);
+    let number = await question('Enter the WhatsApp number to pair (intl format, no +, e.g. 2348012345678): ');
+    number = number.trim().replace(/[^0-9]/g, '');
+    rl.close();
+
+    try {
+      const code = await sock.requestPairingCode(number);
+      console.log('\n==================================================');
+      console.log(`  YOUR PAIRING CODE: ${code}`);
+      console.log('==================================================\n');
+      console.log(`On phone (${number}): WhatsApp > Settings > Linked Devices > Link a Device > Link with phone number instead`);
+    } catch (err) {
+      console.error('Error requesting code:', err.message);
+      process.exit(1);
+    }
   }
 
   sock.ev.on('connection.update', (update) => {
