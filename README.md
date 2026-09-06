@@ -16,7 +16,8 @@ No auto-recharge — this is status/alerting only.
   WhatsApp client. Exposes `POST http://localhost:3000/send-alert`
   which broadcasts a message to a fixed list of WhatsApp numbers.
 - `wa-broadcast/pair.js` — one-off script to link a WhatsApp number
-  to this bot via pairing code (no QR needed).
+  to this bot via pairing code (no QR needed). Prompts for the
+  number interactively — nothing hardcoded.
 - `wa-broadcast/package.json` — dependencies + npm shortcuts.
 - `setup.sh` — installs everything on a fresh Termux install.
 
@@ -44,14 +45,7 @@ starting the gateway, setting up cron).
 
 ## Configuration
 
-Before pairing, edit two things in `wa-broadcast/`:
-
-**`pair.js`** — the number Bailey sends FROM:
-```js
-const number = '2349131382030'; // <-- your number, intl format, no +
-```
-
-**`index.js`** — the numbers that RECEIVE alerts:
+**`wa-broadcast/index.js`** — the numbers that RECEIVE alerts, edit this list:
 ```js
 const ALERT_RECIPIENTS = [
   '2349033094296@s.whatsapp.net',
@@ -60,6 +54,9 @@ const ALERT_RECIPIENTS = [
   '2347036935000@s.whatsapp.net'
 ];
 ```
+
+The number Bailey sends FROM is **not** hardcoded — `pair.js` asks
+for it interactively the first time you run it (see below).
 
 Also check `sim_status.sh` if your SIM bank isn't at `192.168.1.100`,
 uses different admin credentials, or you want to change the low
@@ -81,14 +78,21 @@ cd wa-broadcast
 node pair.js
 ```
 
-This prints an 8-character pairing code. On the phone whose number
-you set in `pair.js`:
+It will ask:
+```
+Enter the WhatsApp number to pair (intl format, no +, e.g. 2348012345678):
+```
+
+Type in the number you want this instance to send alerts FROM, press
+Enter, and it prints an 8-character pairing code. On that phone:
 **WhatsApp → Settings → Linked Devices → Link a Device → Link with
 phone number instead** — enter the code shown.
 
 Once it prints `SUCCESS: WhatsApp Linked and Online!`, the session
 is saved in `wa-broadcast/auth_info/` and you won't need to pair
-again unless you unlink the device or delete that folder.
+again unless you unlink the device or delete that folder. Each
+device/clone of this repo needs its own one-time pairing — session
+credentials aren't portable between machines.
 
 ## Running it
 
