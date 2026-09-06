@@ -1,0 +1,22 @@
+{
+  "name": "wa-broadcast",
+  "version": "1.0.0",
+  "description": "WhatsApp alert gateway for SIM bank airtime monitoring",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "pair": "node pair.js",
+    "pm2:start": "pm2 start index.js --name wa-broadcast --restart-delay 3000",
+    "pm2:restart": "pm2 restart wa-broadcast",
+    "pm2:logs": "pm2 logs wa-broadcast"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true
+}
